@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will you be my Valentine?</title>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-icons@0.19.0/dist/index.bundle.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(to bottom right, #f8c8d1, #d9a7d8, #8a9cc4);
+    }
+
+    .container {
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #ec4b97;
+    }
+
+    .message {
+      font-size: 1.2rem;
+      color: #ec4b97;
+      margin-top: 10px;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #ec4b97;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.3s, background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #d53a7b;
+      transform: scale(1.1);
+    }
+
+    .no-button {
+      background-color: #aaa;
+    }
+
+    .player {
+      margin-top: 30px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .player img {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .control-button {
+      padding: 10px;
+      background-color: #ec4b97;
+      color: white;
+      border-radius: 50%;
+      margin: 0 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .control-button:hover {
+      background-color: #d53a7b;
+    }
+
+    .celebration {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .heart {
+      position: absolute;
+      color: #ec4b97;
+      animation: float 5s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-100vh);
+      }
+    }
+
+    /* Balloon Style */
+    .balloon {
+      position: absolute;
+      width: 50px;
+      height: 70px;
+      background: red;
+      border-radius: 50%;
+      animation: floatBalloon 5s infinite ease-in;
+    }
+
+    /* Firework Style */
+    .firework {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: orange;
+      border-radius: 50%;
+      animation: explode 1s infinite;
+    }
+
+    @keyframes floatBalloon {
+      0% {
+        bottom: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      100% {
+        bottom: 100vh;
+        left: 100vw;
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes explode {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(3);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Will you be my Valentine?</h1>
+
+    <div class="buttons">
+      <button class="button" id="yesButton">Yes</button>
+      <button class="button no-button" id="noButton">No</button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <div class="player">
+      <div id="player"></div>
+      <div id="songInfo">
+        <img src="" alt="Song Thumbnail" id="songImg">
+        <div id="songTitle"></div>
+        <div id="songArtist"></div>
+      </div>
+      <div class="controls">
+        <button class="control-button" id="prevButton">⏮️</button>
+        <button class="control-button" id="playPauseButton">▶️</button>
+        <button class="control-button" id="nextButton">⏭️</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="celebration" class="celebration"></div>
+
+  <script>
+    const songs = [
+      {
+        title: "Allah de Bandeya ",
+        artist: "B praak",
+        youtubeId: "B2ajw96ip8E",  // First new song
+        img: "https://i.ytimg.com/vi/B2ajw96ip8E/hqdefault.jpg"
+      },
+      {
+        title: "KYU",
+        artist: "AZIM AZHAR",
+        youtubeId: "j7eI0es-29E",  // Second new song
+        img: "https://i.ytimg.com/vi/j7eI0es-29E/hqdefault.jpg"
+      }
+    ];
+
+    let currentSongIndex = 0;
+    let isPlaying = false;
+    let player;
+    const messages = [
+      "कुछ तो बात है उसमें, जब देखो तब प्यारी लगती है 🌸🌸 !!",
+      "तू हक जताया कर, अच्छा लगता है 🌸🌸",
+      "पसंद है तू इसीलिए डरता हूँ तेरे खोने से<br>अगर मतलब होता तो क्या ही फर्क पड़ता तेरा होना ना होने से",
+      "एक अरसा लगा हमें यह समझने<br>फर्क है मोहब्बत करने में और कहने में",
+      "Relationship is not only being someone's girlfriend or boyfriend<br>It's about becoming best friends who share laughter and tears together, who act like parents & take care of each other, and like siblings or friends to guide each other.<br>In short, it's all about becoming someone's true soulmate....♥️",
+      "Happy Valentine's Day",
+      "I Love You!"
+    ];
+
+    const messageElement = document.getElementById('message');
+    const songImg = document.getElementById('songImg');
+    const songTitle = document.getElementById('songTitle');
+    const songArtist = document.getElementById('songArtist');
+    const celebrationElement = document.getElementById('celebration');
+    const playPauseButton = document.getElementById('playPauseButton');
+
+    function updateSongInfo() {
+      songImg.src = songs[currentSongIndex].img;
+      songTitle.innerHTML = songs[currentSongIndex].title;
+      songArtist.innerHTML = songs[currentSongIndex].artist;
+    }
+
+    function togglePlayPause() {
+      if (isPlaying) {
+        player.pauseVideo();
+        isPlaying = false;
+        playPauseButton.textContent = "▶️";
+      } else {
+        player.playVideo();
+        isPlaying = true;
+        playPauseButton.textContent = "⏸️";
+      }
+    }
+
+    function playNext() {
+      currentSongIndex = (currentSongIndex + 1) % songs.length;
+      updateSongInfo();
+      player.loadVideoById(songs[currentSongIndex].youtubeId);
+      isPlaying = true;
+      playPauseButton.textContent = "⏸️";
+    }
+
+    function playPrevious() {
+      currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+      updateSongInfo();
+      player.loadVideoById(songs[currentSongIndex].youtubeId);
+      isPlaying = true;
+      playPauseButton.textContent = "⏸️";
+    }
+
+    function handleYesClick() {
+      if (messages.length > 0) {
+        messageElement.innerHTML = messages.shift();
+      } else {
+        showCelebration();
+      }
+      if (!isPlaying) {
+        togglePlayPause();
+      }
+    }
+
+    function showCelebration() {
+      for (let i = 0; i < 20; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.style.left = `${Math.random() * 100}vw`;
+        heart.style.animationDuration = `${Math.random() * 5 + 5}s`;
+        heart.style.animationDelay = `${Math.random() * 5}s`;
+        celebrationElement.appendChild(heart);
+      }
+
+      // Add fireworks
+      for (let i = 0; i < 10; i++) {
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        firework.style.left = `${Math.random() * 100}vw`;
+        firework.style.top = `${Math.random() * 100}vh`;
+        celebrationElement.appendChild(firework);
+      }
+
+      // Add balloons
+      for (let i = 0; i < 5; i++) {
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.style.left = `${Math.random() * 100}vw`;
+        celebrationElement.appendChild(balloon);
+      }
+    }
+
+    document.getElementById('yesButton').addEventListener('click', handleYesClick);
+    document.getElementById('noButton').addEventListener('click', () => {
+      alert('Maybe next time!');
+    });
+
+    document.getElementById('nextButton').addEventListener('click', playNext);
+    document.getElementById('prevButton').addEventListener('click', playPrevious);
+    playPauseButton.addEventListener('click', togglePlayPause);
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '390',
+        width: '640',
+        videoId: songs[currentSongIndex].youtubeId,
+        playerVars: {
+          autoplay: 1,
+          rel: 0
+        }
+      });
+      updateSongInfo();
+    }
+  </script>
+</body>
+</html>
